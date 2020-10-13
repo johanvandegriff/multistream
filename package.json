@@ -1,0 +1,20 @@
+{
+    "name": "chat-man",
+    "version": "0.0.1",
+    "description": "I'm the chat man. Ski-bi-dibby-dib yo-da-dub-dub, yo-da-dub-dub. https://socket.io/get-started/chat/",
+    "license": "AGPL-3.0-or-later",
+    "repository": {
+        "type": "git",
+        "url": "git://gitlab.com/johanvandegriff/live.johanv.xyz.git"
+    },
+    "dependencies": {
+        "@types/node": "^14.11.8",
+        "color-hash": "^1.0.3",
+        "express": "^4.15.2",
+        "jquery": "^3.5.1",
+        "socket.io": "^2.3.0"
+    },
+    "devDependencies": {
+        "video.js": "^7.8.4"
+    }
+}

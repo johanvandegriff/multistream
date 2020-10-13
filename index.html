@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+    <head>
+        <title>live.johanv.xyz</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="/video-js.css" rel="stylesheet" />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                /* font: 13px Helvetica, Arial;
+                margin:40px auto;
+                max-width:650px;
+                padding:0 10px; */
+                line-height:1.6;
+                font-size:18px;
+                background-color: #333;
+                color:white;
+            }
+            form {
+                background: #aaa;
+                padding: 3px;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+            #m {
+                border: 0;
+                padding: 10px;
+                width: 20%;
+                margin-right: 0.5%;
+            }
+            form button {
+                width: 6%;
+                background: rgb(130, 224, 255);
+                border: none;
+                padding: 10px;
+            }
+            #messages {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
+            #messages li {
+                padding: 5px 10px;
+                color: white;
+            }
+            /* #messages li:nth-child(odd) {
+                background: #eee;
+            } */
+            #stream {
+                width: 70%;
+                height: 100%;
+                padding-right: 1em; top: 0;
+                float: left;
+                position: fixed;
+                background: #333;
+                color: white;
+            }
+            #chat { width: 30%;
+                height: 100%;
+                float: right;
+                right: 0;
+                top: 0;
+                position: fixed;
+                background: #111;
+            }
+            a:link {
+                color: DeepSkyBlue;
+                background-color: transparent;
+            }
+
+            a:visited {
+                color: Magenta;
+                background-color: transparent;
+                text-decoration: none;
+            }
+            h1,h2,h3,h4,h5,h6{
+                line-height:1.2
+            }
+        </style>
+    </head>
+    <body>
+        <div id="stream">
+            <h1>live.johanv.xyz &nbsp; | &nbsp; <a target="_blank" href="https://johanv.xyz">back to johanv.xyz</a></h1>
+
+            <video
+                id="my-video"
+                class="video-js vjs-default-skin vjs-16-9"
+                controls
+                preload="auto"
+                width="640"
+                height="264"
+                poster="/stream.png"
+                data-setup='{"fluid": true}'
+            >
+                <source src="/live/stream/index.m3u8" type="application/vnd.apple.mpegurl" />
+                <p class="vjs-no-js">
+                To view this video please enable JavaScript, and consider upgrading to a
+                web browser that
+                <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                </p>
+            </video>
+
+            <div style="padding:5px">
+                <p>Welcome to Johan's stream! Join the chat on the right side of the screen.</p>
+                <p>This stream is also forwarded to <a target="_blank" href="https://www.twitch.tv/jjvantheman">twitch</a>,
+                <a target="_blank" href="https://youtube.com/user/jjvantheman">youtube</a>,
+                and <a target="_blank" href="https://dlive.tv/jjvantheman">dlive</a>,
+                but by viewing it here on the freshest streaming platform in existence, your coolness factor is multiplied by 10.</p>
+                <p>You can visit my <a target="_blank" href="https://johanv.xyz">main website</a>, watch the old streams on <a target="_blank" href="https://odysee.com/@johanv">LBRY</a>,
+                and follow me on <a target="_blank" href="https://fosstodon.org/@johanv">Mastodon</a> for notifications when I go live, and other fun stuff!</p>
+            </div>
+        </div>
+        <div id="chat">
+            <ul id="messages"></ul>
+            <form action="">
+                nickname: <input id="name" autocomplete="off" /><br/>
+                <input id="m" autocomplete="off" autofocus />
+                <button>send</button>
+            </form>
+        </div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script> -->
+        <script src="/jquery.js"></script>
+        <!-- <script src="https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js"></script> -->
+        <script src="/color-hash.js"></script>
+        <!-- <link href="https://vjs.zencdn.net/7.8.4/video-js.css" rel="stylesheet" /> -->
+        <script src="/video.js"></script>
+
+        <script>
+            function getRandomName() {
+                const adjs = ["autumn", "hidden", "bitter", "misty", "silent", "empty", "dry", "dark", "summer", "icy", "delicate", "quiet", "white", "cool", "spring", "winter", "patient", "twilight", "dawn", "crimson", "wispy", "weathered", "blue", "billowing", "broken", "cold", "damp", "falling", "frosty", "green", "long", "late", "lingering", "bold", "little", "morning", "muddy", "old", "red", "rough", "still", "small", "sparkling", "throbbing", "shy", "wandering", "withered", "wild", "black", "young", "holy", "solitary", "fragrant", "aged", "snowy", "proud", "floral", "restless", "divine", "polished", "ancient", "purple", "lively", "nameless"];
+                const nouns = ["waterfall", "river", "breeze", "moon", "rain", "wind", "sea", "morning", "snow", "lake", "sunset", "pine", "shadow", "leaf", "dawn", "glitter", "forest", "hill", "cloud", "meadow", "sun", "glade", "bird", "brook", "butterfly", "bush", "dew", "dust", "field", "fire", "flower", "firefly", "feather", "grass", "haze", "mountain", "night", "pond", "darkness", "snowflake", "silence", "sound", "sky", "shape", "surf", "thunder", "violet", "water", "wildflower", "wave", "water", "resonance", "sun", "wood", "dream", "cherry", "tree", "fog", "frost", "voice", "paper", "frog", "smoke", "star"];
+                return (
+                    adjs[Math.floor(Math.random() * adjs.length)] +
+                    "_" +
+                    nouns[Math.floor(Math.random() * nouns.length)]
+                );
+            }
+
+            var colorHash = new ColorHash({lightness: [0.5,0.6,0.7,0.8], saturation: [0.6,0.7,0.8,0.9,1]});
+
+            $(function () {
+                $('#name').val(getRandomName());
+                var socket = io();
+                $('form').submit(function(e) {
+                    e.preventDefault();
+                    var text = $('#m').val();
+                    if (text != '') {
+                        socket.emit('chat message', {"name": $('#name').val(), "text": text});
+                    }
+                    $('#m').val('');
+                    return false;
+                });
+                socket.on('chat message', function(msg) {
+                    var newmsg = $('#messages').append($('<li>')
+                        .append($('<span>').text(msg.name)
+                            .css('color', colorHash.hex(msg.name+"...."))
+                            .css('font-weight', 'bold'))
+                        .append(": " + msg.text)
+                    );
+                });
+            });
+        </script>
+    </body>
+</html>
