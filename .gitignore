@@ -1,4 +1,4 @@
-nginx.conf.private
+private-nginx.conf
 
 # NodeJS specific #
 .nyc_output/
