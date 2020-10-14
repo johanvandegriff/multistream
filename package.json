@@ -10,9 +10,11 @@
     "dependencies": {
         "@types/node": "^14.11.8",
         "color-hash": "^1.0.3",
+        "dotenv": "^8.2.0",
         "express": "^4.15.2",
         "jquery": "^3.5.1",
-        "socket.io": "^2.3.0"
+        "socket.io": "^2.3.0",
+        "tmi.js": "^1.5.0"
     },
     "devDependencies": {
         "video.js": "^7.8.4"
