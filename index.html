@@ -84,7 +84,7 @@
                         .append($('<span>').text(msg.name)
                             .css('color', colorHash.hex(msg.name+"...."))
                             .css('font-weight', 'bold'))
-                        .append(": " + msg.text)
+                        .append($('<span>').text(": " + msg.text))
                     );
                     
                     //scroll to the most recent message
