@@ -3,89 +3,12 @@
     <head>
         <title>live.johanv.xyz</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="/video-js.css" rel="stylesheet" />
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            body {
-                /* font: 13px Helvetica, Arial;
-                margin:40px auto;
-                max-width:650px;
-                padding:0 10px; */
-                line-height:1.6;
-                font-size:18px;
-                background-color: #333;
-                color:white;
-            }
-            form {
-                background: #aaa;
-                padding: 3px;
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-            }
-            #m {
-                border: 0;
-                padding: 10px;
-                width: 20%;
-                margin-right: 0.5%;
-            }
-            form button {
-                width: 6%;
-                background: rgb(130, 224, 255);
-                border: none;
-                padding: 10px;
-            }
-            #messages {
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-            }
-            #messages li {
-                padding: 5px 10px;
-                color: white;
-            }
-            /* #messages li:nth-child(odd) {
-                background: #eee;
-            } */
-            #stream {
-                width: 70%;
-                height: 100%;
-                padding-right: 1em; top: 0;
-                float: left;
-                position: fixed;
-                background: #333;
-                color: white;
-            }
-            #chat { width: 30%;
-                height: 100%;
-                float: right;
-                right: 0;
-                top: 0;
-                position: fixed;
-                background: #111;
-            }
-            a:link {
-                color: DeepSkyBlue;
-                background-color: transparent;
-            }
-
-            a:visited {
-                color: Magenta;
-                background-color: transparent;
-                text-decoration: none;
-            }
-            h1,h2,h3,h4,h5,h6{
-                line-height:1.2
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="/video-js.css">
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
     <body>
         <div id="stream">
-            <h1>live.johanv.xyz &nbsp; | &nbsp; <a target="_blank" href="https://johanv.xyz">back to johanv.xyz</a></h1>
+            <!-- <h1>live.johanv.xyz &nbsp; | &nbsp; <a target="_blank" href="https://johanv.xyz">back to johanv.xyz</a></h1> -->
 
             <video
                 id="my-video"
@@ -94,25 +17,24 @@
                 preload="auto"
                 width="640"
                 height="264"
-                poster="/stream.png"
+                poster="/static/stream.png"
                 data-setup='{"fluid": true}'
             >
                 <source src="/live/stream/index.m3u8" type="application/vnd.apple.mpegurl" />
                 <p class="vjs-no-js">
-                To view this video please enable JavaScript, and consider upgrading to a
-                web browser that
+                To view this video please enable JavaScript, and consider upgrading to a web browser that
                 <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
                 </p>
             </video>
-
-            <div style="padding:5px">
-                <p>Welcome to Johan's stream! Join the chat on the right side of the screen.</p>
-                <p>This stream is also forwarded to <a target="_blank" href="https://www.twitch.tv/jjvantheman">twitch</a>,
+            <div id="about">
+                <p>Welcome to Johan's stream at live.johanv.xyz!
+                (also on <a target="_blank" href="https://www.twitch.tv/jjvantheman">twitch</a>,
                 <a target="_blank" href="https://youtube.com/user/jjvantheman">youtube</a>,
-                and <a target="_blank" href="https://dlive.tv/jjvantheman">dlive</a>,
-                but by viewing it here on the freshest streaming platform in existence, your coolness factor is multiplied by 10.</p>
-                <p>You can visit my <a target="_blank" href="https://johanv.xyz">main website</a>, watch the old streams on <a target="_blank" href="https://odysee.com/@johanv">LBRY</a>,
-                and follow me on <a target="_blank" href="https://fosstodon.org/@johanv">Mastodon</a> for notifications when I go live, and other fun stuff!</p>
+                and <a target="_blank" href="https://dlive.tv/jjvantheman">dlive</a>).</p>
+                <p>main site: <a target="_blank" href="https://johanv.xyz">johanv.xyz</a>
+                | old streams: <a target="_blank" href="https://odysee.com/@johanv">LBRY</a>
+                | stream announcements:
+                <a target="_blank" href="https://fosstodon.org/@johanv">mastodon</a></p>
             </div>
         </div>
         <div id="chat">
@@ -158,12 +80,15 @@
                     return false;
                 });
                 socket.on('chat message', function(msg) {
-                    var newmsg = $('#messages').append($('<li>')
+                    $('#messages').append($('<li>')
                         .append($('<span>').text(msg.name)
                             .css('color', colorHash.hex(msg.name+"...."))
                             .css('font-weight', 'bold'))
                         .append(": " + msg.text)
                     );
+                    
+                    //scroll to the most recent message
+                    $("#messages").scrollTop($("#messages")[0].scrollHeight);
                 });
             });
         </script>

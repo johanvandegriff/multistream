@@ -1,0 +1,120 @@
+* {
+    margin: 0;
+    padding: 0;
+    /* box-sizing: border-box; */
+}
+/*temp border*/
+/* div {
+    border: 1px red;
+    border-style: dashed;
+} */
+
+html {
+    height: 100%;
+}
+
+body {
+    /* font: 13px Helvetica, Arial;
+    margin:40px auto;
+    max-width:650px;
+    padding:0 10px; */
+    height: 100%;
+    line-height:1.6;
+    font-size:18px;
+    background-color: #333;
+    color:white;
+    overflow-x: hidden; /*tmp hack, some element is too wide but i cannot find it*/
+}
+form {
+    background: #aaa;
+    padding: 3px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+#m {
+    border: 0;
+    padding: 10px;
+    width: 150px;
+    margin-right: 0.5%;
+}
+form button {
+    width: 50px;
+    background: rgb(130, 224, 255);
+    border: none;
+    padding: 10px;
+}
+#stream {
+    width: calc(100vw - 315px);
+    height: 100%;
+    padding-right: 1em; top: 0;
+    float: left;
+    /* position: fixed; */
+    background: #333;
+    color: white;
+}
+#chat {
+    width: 300px;
+    /* height: calc(100vh - 75px); */
+    height: 100%;
+    float: right;
+    right: 0;
+    /* top: 0; */
+    position: fixed;
+    background: #111;
+}
+#messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    height: calc(100vh - 75px);
+    overflow-y: scroll;
+    /* overflow-x: auto; */
+    word-wrap: break-word;
+    background: #111;
+}
+#messages li {
+    padding: 2px 10px;
+}
+/* #messages li:nth-child(odd) {
+    background: #eee;
+} */
+#about {
+    padding: 5px;
+}
+a:link {
+    color: DeepSkyBlue;
+    background-color: transparent;
+}
+
+a:visited {
+    color: Magenta;
+    background-color: transparent;
+    text-decoration: none;
+}
+h1,h2,h3,h4,h5,h6{
+    line-height:1.2
+}
+
+
+@media all and (max-width: 900px) {
+    #stream {
+        width: 100%;
+    }
+    #chat {
+        width: 100%;
+        display: block;
+        height: calc(100vh - 56.25vw - 325px + 15vw);
+        position: absolute;
+        bottom: 100px;
+        box-sizing: border-box;
+    }
+    #messages {
+        height: calc(100vh - 56.25vw - 300px + 15vw);
+    }
+    #m {
+        width: calc(100vw - 90px);
+    }
+
+}
+
