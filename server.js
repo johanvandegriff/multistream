@@ -1,7 +1,9 @@
-var express = require('express');
-var app = express();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+const express = require('express');
+const app = express();
+const http = require('http');
+const https = require('https');
+const server = http.createServer(app);
+const io = require('socket.io')(server);
 const tmi = require('tmi.js'); //twitch chat https://dev.twitch.tv/docs/irc
 
 require('dotenv').config({ path: '/srv/secret-twitch.env' }) //bot API key and other info
@@ -97,10 +99,28 @@ function handleCommand(commandName1) {
         client.say(process.env.BOT_CHANNEL, `You rolled a ${num}`);
     } else if (commandName === '!boggle') {
         client.say(process.env.BOT_CHANNEL, `play boggle at https://games.johanv.xyz/boggle`);
+    } else if (commandName === '!carl' || commandName === '!CARL') {
+        const url = 'https://games.johanv.xyz/carl_api';
+        const request = https.request(url, (response) => {
+            let data = '';
+            response.on('data', (chunk) => {
+                data = data + chunk.toString();
+            });
+            response.on('end', () => {
+                // const body = JSON.parse(data);
+                console.log(data);
+                client.say(process.env.BOT_CHANNEL, `CARL says: ${data} (https://games.johanv.xyz/carl)`);
+            });
+        })
+        request.on('error', (error) => {
+            console.log('An error', error);
+        });
+        request.end();
     } else {
         valid = false;
         console.log(`* Unknown command ${commandName}`);
     }
+
     if (valid) {
         console.log(`* Executed ${commandName} command`);
     }
@@ -116,7 +136,7 @@ function rollDice () {
 
 //start the http server
 var default_port = 8080;
-http.listen(process.env.PORT || default_port, () => {
+server.listen(process.env.PORT || default_port, () => {
     console.log('listening on *:' + (process.env.PORT || default_port));
 });
 
@@ -130,3 +150,4 @@ http.listen(process.env.PORT || default_port, () => {
 //TODO favicon
 //TODO use flexbox for CSS?
 //TODO obs overlay
+//TODO !carl command pass in the rest of the message to the CARL API
