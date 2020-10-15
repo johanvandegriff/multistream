@@ -16,7 +16,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY package*.json ./
 
 RUN apt-get update -yq \
-     && apt-get -yq install curl gnupg ca-certificates \
+     && apt-get -yq install curl gnupg ca-certificates apt-utils \
      && curl -L https://deb.nodesource.com/setup_12.x | bash \
      && apt-get update -yq \
      && apt-get install -yq \

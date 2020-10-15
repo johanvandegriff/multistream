@@ -7,6 +7,7 @@ const io = require('socket.io')(server);
 const dotenv = require('dotenv'); //for storing secrets in an env file
 const tmi = require('tmi.js'); //twitch chat https://dev.twitch.tv/docs/irc
 const Dlive = require('dlivetv-api'); //dlive chat https://github.com/lkd70/dlivetv-api
+const YouTube = require('youtube-live-chat'); //youtube live chat https://github.com/yuta0801/youtube-live-chat
 
 //expose js libraries to client so they can run in the browser
 app.get('/', (req, res) => {res.sendFile(__dirname + '/index.html')});
@@ -118,6 +119,8 @@ function handleCommand(commandName1) {
             console.log('An error', error);
         });
         request.end();
+    } else if (commandName === "we are live!") {
+        connect_to_youtube_if_not_connected(); //TODO make a better mechanism for running this
     } else {
         valid = false;
         console.log(`* Unknown command ${commandName}`);
@@ -133,6 +136,7 @@ function rollDice () {
     const sides = 6;
     return Math.floor(Math.random() * sides) + 1;
 }
+
 
 //dlive chat stuff
 dotenv.config({ path: '/srv/secret-dlive.env' }) //bot API key and other info
@@ -160,6 +164,59 @@ bot.on('ChatText', msg => {
     // }
 });
 
+
+//youtube live chat stuff
+dotenv.config({ path: '/srv/secret-youtube.env' }) //bot API key and other info
+//the /srv/secret-youtube.env file should look like:
+//YOUTUBE_CHANNEL_ID=UCmrLaVZneWG3kJyPqp-RFJQ (this is my channel ID, as in https://www.youtube.com/channel/UCmrLaVZneWG3kJyPqp-RFJQ)
+//YOUTUBE_API_KEY=blah blah blah
+// console.log("YOUTUBE_CHANNEL_ID " + process.env.YOUTUBE_CHANNEL_ID);
+// console.log("YOUTUBE_API_KEY " + process.env.YOUTUBE_API_KEY);
+
+var yt; // = new YouTube(process.env.YOUTUBE_CHANNEL_ID, process.env.YOUTUBE_API_KEY);
+
+//the problem is that it fails when there is no livestream, and gives up after 1 attempt
+//i solve this by checking every minute for a livestream until it finds one and successfully connects to the chat
+// setInterval(function(){ connect_to_youtube_if_not_connected() }, 60000);
+//using an interval uses up my api key quota, so instead this function is called when i type "we are live!" in the chat (see handleCommand)
+function connect_to_youtube_if_not_connected() {
+    if (yt != undefined && yt.liveId != undefined && yt.chatId != undefined) {
+        console.log("youtube is already connected");
+        iosend("youtube", "connected");
+        return;
+    }
+    iosend("youtube", "trying to connect...");
+    console.log("trying to connect to youtube...");
+
+    yt = new YouTube(process.env.YOUTUBE_CHANNEL_ID, process.env.YOUTUBE_API_KEY);
+
+    yt.on('ready', () => {
+        iosend("youtube", "connected!");
+        console.log('YouTube is ready!');
+        console.log("yt.liveId: " + yt.liveId);
+        console.log("yt.chatId: " + yt.chatId);
+        yt.listen(1000);
+    })
+
+    yt.on('message', data => {
+        console.log(data.snippet.displayMessage);
+        console.log(JSON.stringify(data));
+        iosend(data.authorDetails.displayName, data.snippet.displayMessage)
+    })
+
+    yt.on('error', error => {
+        iosend("youtube", "error connecting to chat");
+        console.error("YouTube ERROR");
+        console.log(error);
+        console.log("yt.liveId: " + yt.liveId);
+        console.log("yt.chatId: " + yt.chatId);
+    })
+
+}
+
+
+
+
 //start the http server
 var default_port = 8080;
 server.listen(process.env.PORT || default_port, () => {
@@ -168,7 +225,6 @@ server.listen(process.env.PORT || default_port, () => {
 
 //TODO clean up the CSS, make text look good
 //TODO add cards instead of links
-//TODO pull youtube chat
 //TODO only change nickname when email is provided
 //TODO save nickname with cookies
 //TODO add a README with setup instructions and change package name and version
@@ -177,3 +233,7 @@ server.listen(process.env.PORT || default_port, () => {
 //TODO obs overlay
 //TODO !carl command pass in the rest of the message to the CARL API
 //TODO unify the commands
+//TODO unify the secret keys
+//TODO look at https://github.com/emad-elsaid/restreamer
+//TODO look at https://openstreamingplatform.com/
+//TODO chat notification sound
