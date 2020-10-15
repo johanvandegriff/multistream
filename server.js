@@ -210,6 +210,8 @@ function connect_to_youtube_if_not_connected() {
         console.log(error);
         console.log("yt.liveId: " + yt.liveId);
         console.log("yt.chatId: " + yt.chatId);
+
+        yt = null; //disconnect when there is an error
     })
 
 }
