@@ -36,6 +36,12 @@
                 | stream announcements:
                 <a target="_blank" href="https://fosstodon.org/@johanv">mastodon</a></p>
             </div>
+
+            <audio id="notification">
+                <source src="/static/notification.ogg" type="audio/mpeg">
+            </audio>
+            <input type="checkbox" id="check" name="check" value="yes">
+            <label for="check">chat notification sound?</label>
         </div>
         <div id="chat">
             <ul id="messages"></ul>
@@ -89,6 +95,13 @@
                     
                     //scroll to the most recent message
                     $("#messages").scrollTop($("#messages")[0].scrollHeight);
+
+                    //play sound if checkbox is checked
+                    if (document.getElementById("check").checked) {
+                        document.getElementById("notification").pause();
+                        document.getElementById("notification").currentTime = 0;
+                        document.getElementById("notification").play()
+                    }
                 });
             });
         </script>
