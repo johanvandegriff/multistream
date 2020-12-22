@@ -40,13 +40,13 @@
             <audio id="notification">
                 <source src="/static/notification.ogg" type="audio/mpeg">
             </audio>
-            <input type="checkbox" id="check" name="check" value="yes">
-            <label for="check">chat notification sound?</label>
         </div>
         <div id="chat">
             <ul id="messages"></ul>
             <form action="">
-                nickname: <input id="name" autocomplete="off" /><br/>
+                name: <input id="name" autocomplete="off" />
+                <input type="checkbox" id="check" name="check" value="yes">
+                <label for="check">sound?</label><br/>
                 <input id="m" autocomplete="off" autofocus />
                 <button>send</button>
             </form>
