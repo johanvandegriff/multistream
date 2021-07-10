@@ -25,7 +25,7 @@ app.use('/live', express.static('live'));
 io.on('connection', (socket) => {
     console.log('a user connected');
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        console.log('a user disconnected');
     });
 
     socket.on('chat message', (msg) => {
@@ -82,6 +82,9 @@ function onMessageHandler (target, context, msg, self) {
     console.log("CONTEXT " + JSON.stringify(context));
     console.log("MSG " + msg);
     console.log("SELF " + self);
+
+    // Ignore whispers
+    if (context.message-type == "whisper") { return; }
 
     //copy twitch chat to socket chat
     iosend(context.username, msg);
