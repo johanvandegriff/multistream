@@ -84,7 +84,7 @@ function onMessageHandler (target, context, msg, self) {
     console.log("SELF " + self);
 
     // Ignore whispers
-    if (context.message-type == "whisper") { return; }
+    if (context["message-type"] == "whisper") { return; }
 
     //copy twitch chat to socket chat
     iosend(context.username, msg);
