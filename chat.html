@@ -7,41 +7,7 @@
         <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
     <body>
-        <div id="stream">
-            <!-- <h1>live.johanv.xyz &nbsp; | &nbsp; <a target="_blank" href="https://johanv.xyz">back to johanv.xyz</a></h1> -->
-
-            <video
-                id="my-video"
-                class="video-js vjs-default-skin vjs-16-9"
-                controls
-                preload="auto"
-                width="640"
-                height="264"
-                poster="/static/stream.png"
-                data-setup='{"fluid": true}'
-            >
-                <source src="/live/stream/index.m3u8" type="application/vnd.apple.mpegurl" />
-                <p class="vjs-no-js">
-                To view this video please enable JavaScript, and consider upgrading to a web browser that
-                <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-                </p>
-            </video>
-            <div id="about">
-                <p>Welcome to Johan's stream at live.johanv.xyz!
-                (also on <a target="_blank" href="https://www.twitch.tv/jjvantheman">twitch</a>,
-                <a target="_blank" href="https://youtube.com/user/jjvantheman">youtube</a>,
-                and <a target="_blank" href="https://dlive.tv/jjvantheman">dlive</a>).</p>
-                <p>main site: <a target="_blank" href="https://johanv.xyz">johanv.xyz</a>
-                | old streams: <a target="_blank" href="https://odysee.com/@johanv">LBRY</a>
-                | stream announcements:
-                <a target="_blank" href="https://fosstodon.org/@johanv">mastodon</a></p>
-            </div>
-
-            <audio id="notification">
-                <source src="/static/notification.ogg" type="audio/mpeg">
-            </audio>
-        </div>
-        <div id="chat">
+        <div id="chat_fullscreen">
             <ul id="messages"></ul>
             <form action="">
                 name: <input id="name" autocomplete="off" />
@@ -49,7 +15,6 @@
                 <label for="check">sound?</label><br/>
                 <input id="m" autocomplete="off" autofocus />
                 <button>send</button>
-                <a target="_blank" href="/chat"><img style="width:20px" src="https://johanv.xyz/external-link-ltr-icon.svg" alt="popout"/></a>
             </form>
         </div>
 

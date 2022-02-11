@@ -11,6 +11,7 @@ const YouTube = require('youtube-live-chat'); //youtube live chat https://github
 
 //expose js libraries to client so they can run in the browser
 app.get('/', (req, res) => {res.sendFile(__dirname + '/index.html')});
+app.get('/chat', (req, res) => {res.sendFile(__dirname + '/chat.html')});
 app.get('/jquery.js', (req, res) => {res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.js')});
 app.get('/color-hash.js', (req, res) => {res.sendFile(__dirname + '/node_modules/color-hash/dist/color-hash.js')});
 app.get('/video.js', (req, res) => {res.sendFile(__dirname + '/node_modules/video.js/dist/video.js')});
@@ -241,4 +242,4 @@ server.listen(process.env.PORT || default_port, () => {
 //TODO unify the secret keys
 //TODO look at https://github.com/emad-elsaid/restreamer
 //TODO look at https://openstreamingplatform.com/
-//TODO chat notification sound
+//TODO look at https://github.com/owncast/owncast
