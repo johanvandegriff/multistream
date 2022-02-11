@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+    <head>
+        <title>live.johanv.xyz</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+    </head>
+    <body style="background-color: transparent">
+        <div id="chat_fullscreen">
+            <ul id="messages" style="background-color: transparent; height: calc(100vh); overflow: hidden;"></ul>
+        </div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/jquery.js"></script>
+        <script src="/color-hash.js"></script>
+
+        <script>
+            var colorHash = new ColorHash({lightness: [0.5,0.6,0.7,0.8], saturation: [0.6,0.7,0.8,0.9,1]});
+
+            $(function () {
+                var socket = io();
+                socket.on('chat message', function(msg) {
+                    $('#messages').append($('<li>')
+                        .append($('<span>').text(msg.name)
+                            .css('color', colorHash.hex(msg.name+"...."))
+                            .css('font-weight', 'bold'))
+                        .append($('<span>').text(": " + msg.text))
+                    );
+                    
+                    //scroll to the most recent message
+                    $("#messages").scrollTop($("#messages")[0].scrollHeight);
+                });
+            });
+        </script>
+    </body>
+</html>

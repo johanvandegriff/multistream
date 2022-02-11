@@ -113,7 +113,7 @@ h1,h2,h3,h4,h5,h6{
         height: calc(100vh - 56.25vw - 300px + 15vw);
     }
     #m {
-        width: calc(100vw - 90px);
+        width: calc(100vw - 120px);
     }
 
 }

@@ -3,7 +3,6 @@
     <head>
         <title>live.johanv.xyz</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="/video-js.css">
         <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
     <body>
@@ -13,18 +12,15 @@
                 name: <input id="name" autocomplete="off" />
                 <input type="checkbox" id="check" name="check" value="yes">
                 <label for="check">sound?</label><br/>
-                <input id="m" autocomplete="off" autofocus />
+                <input id="m" autocomplete="off" autofocus style="width: calc(100vw - 120px);" />
                 <button>send</button>
+                <a target="_blank" href="/chat-transparent"><img style="width:20px" src="https://johanv.xyz/external-link-ltr-icon.svg" alt="popout transparent"/></a>
             </form>
         </div>
 
         <script src="/socket.io/socket.io.js"></script>
-        <!-- <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script> -->
         <script src="/jquery.js"></script>
-        <!-- <script src="https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js"></script> -->
         <script src="/color-hash.js"></script>
-        <!-- <link href="https://vjs.zencdn.net/7.8.4/video-js.css" rel="stylesheet" /> -->
-        <script src="/video.js"></script>
 
         <script>
             function getRandomName() {

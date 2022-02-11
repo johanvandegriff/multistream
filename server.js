@@ -12,6 +12,7 @@ const YouTube = require('youtube-live-chat'); //youtube live chat https://github
 //expose js libraries to client so they can run in the browser
 app.get('/', (req, res) => {res.sendFile(__dirname + '/index.html')});
 app.get('/chat', (req, res) => {res.sendFile(__dirname + '/chat.html')});
+app.get('/chat-transparent', (req, res) => {res.sendFile(__dirname + '/chat-transparent.html')});
 app.get('/jquery.js', (req, res) => {res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.js')});
 app.get('/color-hash.js', (req, res) => {res.sendFile(__dirname + '/node_modules/color-hash/dist/color-hash.js')});
 app.get('/video.js', (req, res) => {res.sendFile(__dirname + '/node_modules/video.js/dist/video.js')});
