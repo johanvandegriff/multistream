@@ -33,6 +33,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (msg) => {
+        if (msg.text === "we are live!") {
+            //TODO make a better mechanism for running this
+            console.log("Setting up youtube and owncast connections...")
+            connect_to_youtube_if_not_connected();
+            connect_to_owncast_if_not_connected();
+        }
         // iosend(msg.name, msg.text);
         owncastSend(msg.name, msg.text);
         handleCommand(msg.text);
@@ -59,7 +65,7 @@ dotenv.config({ path: '/srv/secret-owncast.env' }) //owncast URL
 console.log("OWNCAST_URL", process.env.OWNCAST_URL);
 console.log("OWNCAST_WS", process.env.OWNCAST_WS);
 
-function owncastChatConnect(name, onConnectionEstablished, onMessageReceived) {
+function owncastChatConnect(name, onConnectionEstablished, onMessageReceived, onErrorOrClose) {
     axios.post(process.env.OWNCAST_URL+'/api/chat/register', {"displayName": name}).then((res) => {
         console.log(`Status: ${res.status}`);
         console.log('Body:', res.data);
@@ -70,16 +76,18 @@ function owncastChatConnect(name, onConnectionEstablished, onMessageReceived) {
 
         client.on('connectFailed', function(error) {
             console.log('Connect Error: ' + error.toString());
-            owncastPending.delete(name);
+            onErrorOrClose();
         });
 
         client.on('connect', function(connection) {
             console.log('WebSocket Client Connected');
             connection.on('error', function(error) {
                 console.log("Connection Error: " + error.toString());
+                onErrorOrClose();
             });
             connection.on('close', function() {
                 console.log('Connection Closed');
+                onErrorOrClose();
             });
             connection.on('message', function(message) {
                 if (message.type === 'utf8') {
@@ -97,28 +105,57 @@ function owncastChatConnect(name, onConnectionEstablished, onMessageReceived) {
 
     }).catch((err) => {
         console.error(err);
-        owncastPending.delete(name);
+        onErrorOrClose();
     });
 }
 
-//chat connection just for listening
-owncastChatConnect("multistream protocol droid", (connection) => {
-    //connection established
-}, (message) => {
-    //message received
-    // console.log("Received: '" + JSON.stringify(message) + "'");
-    //user joins:
-    //Received: '{"id":"dZl60kLng","timestamp":"2022-02-27T23:37:24.330263605Z","type":"USER_JOINED","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]}}'
-    //message:
-    // Received: '{"body":"hello world","id":"En3e0kY7g","timestamp":"2022-02-27T23:37:28.502353829Z","type":"CHAT","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]},"visible":true}'
-    
-    //simplified: {"body": "hello world", "user": {"displayName": "priceless-roentgen"}}
-    if ("body" in message && "user" in message && "displayName" in message.user) {
-        var name = message.user.displayName;
-        var text = message.body;
-        iosend(name, text);
+var owncastProtocolChatConnection;
+
+function connect_to_owncast_if_not_connected() {
+    console.log('owncastProtocolChatConnection === undefined:', owncastProtocolChatConnection === undefined);
+    if (owncastProtocolChatConnection === undefined) {
+        //chat connection just for listening
+        owncastChatConnect("multistream protocol droid", (connection) => {
+            //connection established
+            owncastProtocolChatConnection = connection;
+        }, (message) => {
+            //message received
+            // console.log("Received: '" + JSON.stringify(message) + "'");
+            //user joins:
+            //Received: '{"id":"dZl60kLng","timestamp":"2022-02-27T23:37:24.330263605Z","type":"USER_JOINED","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]}}'
+            //message:
+            // Received: '{"body":"hello world","id":"En3e0kY7g","timestamp":"2022-02-27T23:37:28.502353829Z","type":"CHAT","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]},"visible":true}'
+            
+            //simplified: {"body": "hello world", "user": {"displayName": "priceless-roentgen"}}
+            if ("body" in message && "user" in message && "displayName" in message.user) {
+                var name = message.user.displayName;
+                var text = message.body;
+                iosend(name, text);
+            }
+        }, () => {
+            //error/close
+            if (owncastProtocolChatConnection != undefined) {
+                owncastProtocolChatConnection.close();
+                owncastProtocolChatConnection = undefined;
+            }
+        });
     }
-});
+    //  else {
+    //     axios.post(process.env.OWNCAST_URL+'/api/status').then((res) => {
+    //         console.log(`Status: ${res.status}`);
+    //         console.log('Body:', res.data);
+            
+    //         var isOnline = res.data.online;
+
+    //         if (!isOnline) {
+    //             owncastProtocolChatConnection.close();
+    //             owncastProtocolChatConnection = undefined;
+    //         }
+    //     }).catch((err) => {
+    //         console.error(err);
+    //     });
+    // }
+}
 
 
 owncastWebSockets = {};
@@ -157,6 +194,9 @@ function owncastSend(name, text) {
         // connection.close();
     }, (message) => {
         //message received
+    }, () => {
+        //error/close
+        owncastPending.delete(name);
     });
 }
 
@@ -198,7 +238,7 @@ function onMessageHandler (target, context, msg, self) {
     console.log("SELF " + self);
 
     // Ignore whispers
-    if (context["message-type"] == "whisper") { return; }
+    if (context["message-type"] === "whisper") { return; }
 
     //copy twitch chat to owncast chat, which comes back to socket chat
     // iosend(context.username, msg);
@@ -237,8 +277,6 @@ function handleCommand(commandName1) {
             console.log('An error', error);
         });
         request.end();
-    } else if (commandName === "we are live!") {
-        connect_to_youtube_if_not_connected(); //TODO make a better mechanism for running this
     } else {
         valid = false;
         console.log(`* Unknown command ${commandName}`);
