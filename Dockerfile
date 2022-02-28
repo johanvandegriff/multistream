@@ -30,6 +30,7 @@ RUN npm install
 COPY . .
 
 EXPOSE 8080
+EXPOSE 8081
 
 #the script contains both the commands below
 CMD ["/var/www/cmd.sh"]

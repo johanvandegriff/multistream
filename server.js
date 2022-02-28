@@ -8,6 +8,8 @@ const dotenv = require('dotenv'); //for storing secrets in an env file
 const tmi = require('tmi.js'); //twitch chat https://dev.twitch.tv/docs/irc
 const Dlive = require('dlivetv-api'); //dlive chat https://github.com/lkd70/dlivetv-api
 const YouTube = require('youtube-live-chat'); //youtube live chat https://github.com/yuta0801/youtube-live-chat
+const axios = require('axios');
+const WebSocketClient = require('websocket').client;
 
 //expose js libraries to client so they can run in the browser
 app.get('/', (req, res) => {res.sendFile(__dirname + '/index.html')});
@@ -31,7 +33,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (msg) => {
-        iosend(msg.name, msg.text)
+        // iosend(msg.name, msg.text);
+        owncastSend(msg.name, msg.text);
         handleCommand(msg.text);
     });
 });
@@ -46,6 +49,115 @@ function iosend(name, text) {
     // for (i=0; i<30; i++) {
     //     io.emit('chat message', iomsg);
     // }
+}
+
+//owncast chat stuff
+dotenv.config({ path: '/srv/secret-owncast.env' }) //owncast URL
+//the /srv/secret-owncast.env file should look like:
+//OWNCAST_URL=https://owncast.my.site
+//OWNCAST_WS=wss://owncast.my.site
+console.log("OWNCAST_URL", process.env.OWNCAST_URL);
+console.log("OWNCAST_WS", process.env.OWNCAST_WS);
+
+function owncastChatConnect(name, onConnectionEstablished, onMessageReceived) {
+    axios.post(process.env.OWNCAST_URL+'/api/chat/register', {"displayName": name}).then((res) => {
+        console.log(`Status: ${res.status}`);
+        console.log('Body:', res.data);
+        
+        var token = res.data.accessToken;
+
+        var client = new WebSocketClient();
+
+        client.on('connectFailed', function(error) {
+            console.log('Connect Error: ' + error.toString());
+            owncastPending.delete(name);
+        });
+
+        client.on('connect', function(connection) {
+            console.log('WebSocket Client Connected');
+            connection.on('error', function(error) {
+                console.log("Connection Error: " + error.toString());
+            });
+            connection.on('close', function() {
+                console.log('Connection Closed');
+            });
+            connection.on('message', function(message) {
+                if (message.type === 'utf8') {
+                    // console.log("Received: '" + message.utf8Data + "'");
+
+                    //multiple json objects can be sent in the same message, separated by newlines
+                    message.utf8Data.split("\n").forEach(text => onMessageReceived(JSON.parse(text)));
+                }
+            });
+
+            onConnectionEstablished(connection);
+        });
+
+        client.connect(process.env.OWNCAST_WS+'/ws?accessToken='+token);
+
+    }).catch((err) => {
+        console.error(err);
+        owncastPending.delete(name);
+    });
+}
+
+//chat connection just for listening
+owncastChatConnect("multistream protocol droid", (connection) => {
+    //connection established
+}, (message) => {
+    //message received
+    // console.log("Received: '" + JSON.stringify(message) + "'");
+    //user joins:
+    //Received: '{"id":"dZl60kLng","timestamp":"2022-02-27T23:37:24.330263605Z","type":"USER_JOINED","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]}}'
+    //message:
+    // Received: '{"body":"hello world","id":"En3e0kY7g","timestamp":"2022-02-27T23:37:28.502353829Z","type":"CHAT","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]},"visible":true}'
+    
+    //simplified: {"body": "hello world", "user": {"displayName": "priceless-roentgen"}}
+    if ("body" in message && "user" in message && "displayName" in message.user) {
+        var name = message.user.displayName;
+        var text = message.body;
+        iosend(name, text);
+    }
+});
+
+
+owncastWebSockets = {};
+owncastPending = new Set();
+owncastQueue = {};
+
+function sendQueue(connection, queue) {
+    while(queue.length > 0) {
+        var text = queue.shift()
+        connection.sendUTF(JSON.stringify({"body": text, "type":"CHAT"}));
+    }
+}
+
+function owncastSend(name, text) {
+    if (owncastQueue[name] == null) {
+        owncastQueue[name] = [];
+    }
+    owncastQueue[name].push(text);
+
+    if (name in owncastPending) {
+        return;
+    }
+
+    if (name in owncastWebSockets) {
+        sendQueue(owncastWebSockets[name], owncastQueue[name]);
+        return;
+    }
+
+    owncastPending.add(name); //mark as pending to avoid double registration
+
+    owncastChatConnect(name, (connection) => {
+        //connection established
+        owncastWebSockets[name] = connection;
+        sendQueue(connection, owncastQueue[name]);
+        owncastPending.delete(name);
+        // connection.close();
+    }, (message) => {
+        //message received
+    });
 }
 
 //twitch chat stuff
@@ -88,8 +200,9 @@ function onMessageHandler (target, context, msg, self) {
     // Ignore whispers
     if (context["message-type"] == "whisper") { return; }
 
-    //copy twitch chat to socket chat
-    iosend(context.username, msg);
+    //copy twitch chat to owncast chat, which comes back to socket chat
+    // iosend(context.username, msg);
+    owncastSend(context.username, msg);
 
     if (self) { return; } // Ignore messages from the bot
     handleCommand(msg);
@@ -157,8 +270,9 @@ bot.on('ChatText', msg => {
     // Log every message recieved to the console
     console.log(`[${msg.sender.displayname}]: ${msg.content}`);
 
-    //copy dlive chat to socket chat
-    iosend(msg.sender.displayname, msg.content);
+    //copy dlive chat to owncast, which forwards to socket chat
+    // iosend(msg.sender.displayname, msg.content);
+    owncastSend(msg.sender.displayname, msg.content);
 
     handleCommand(msg.content);
 
@@ -206,7 +320,8 @@ function connect_to_youtube_if_not_connected() {
     yt.on('message', data => {
         console.log(data.snippet.displayMessage);
         console.log(JSON.stringify(data));
-        iosend(data.authorDetails.displayName, data.snippet.displayMessage)
+        // iosend(data.authorDetails.displayName, data.snippet.displayMessage)
+        owncastSend(data.authorDetails.displayName, data.snippet.displayMessage)
     })
 
     yt.on('error', error => {
@@ -229,6 +344,9 @@ var default_port = 8080;
 server.listen(process.env.PORT || default_port, () => {
     console.log('listening on *:' + (process.env.PORT || default_port));
 });
+
+//TODO create a more robust system instead of sending messages to owncast and back
+//TODO merge with owncast: twitch/youtube/dlive connection, popout/transparent chat
 
 //TODO clean up the CSS, make text look good
 //TODO add cards instead of links
