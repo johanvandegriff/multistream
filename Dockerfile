@@ -22,7 +22,7 @@ RUN echo 'deb http://deb.debian.org/debian buster main non-free contrib' > /etc/
 
 RUN apt-get update -yq \
      && apt-get -yq install curl gnupg ca-certificates apt-utils \
-     && curl -L https://deb.nodesource.com/setup_12.x | bash \
+     && curl -L https://deb.nodesource.com/setup_18.x | bash \
      && apt-get update -yq \
      && apt-get install -yq \
          nodejs
