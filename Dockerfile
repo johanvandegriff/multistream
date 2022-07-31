@@ -15,6 +15,11 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # where available (npm@5+)
 COPY package*.json ./
 
+#a hack for now to get new enough libc for owncast
+RUN echo 'deb http://deb.debian.org/debian buster main non-free contrib' > /etc/apt/sources.list.d/buster.list \
+     && apt-get update -yq \
+     && apt-get install -yq libc6
+
 RUN apt-get update -yq \
      && apt-get -yq install curl gnupg ca-certificates apt-utils \
      && curl -L https://deb.nodesource.com/setup_12.x | bash \
