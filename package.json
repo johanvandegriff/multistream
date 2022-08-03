@@ -5,7 +5,7 @@
     "license": "AGPL-3.0-or-later",
     "repository": {
         "type": "git",
-        "url": "git://gitlab.com/johanvandegriff/live.johanv.xyz.git"
+        "url": "git://codeberg.org/johanvandegriff/live.johanv.xyz.git"
     },
     "dependencies": {
         "@types/node": "^14.11.8",
