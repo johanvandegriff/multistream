@@ -259,9 +259,9 @@ function handleCommand(commandName1) {
         //commands sent here will be echoed to the socket chat since they will be detected by onMessageHandler
         client.say(process.env.BOT_CHANNEL, `You rolled a ${num}`);
     } else if (commandName === '!boggle') {
-        client.say(process.env.BOT_CHANNEL, `play boggle at https://games.johanv.xyz/boggle`);
+        client.say(process.env.BOT_CHANNEL, `play boggle at https://games.johanv.net/boggle`);
     } else if (commandName === '!carl' || commandName === '!CARL') {
-        const url = 'https://games.johanv.xyz/carl_api';
+        const url = 'https://games.johanv.net/carl_api';
         const request = https.request(url, (response) => {
             let data = '';
             response.on('data', (chunk) => {
@@ -270,7 +270,7 @@ function handleCommand(commandName1) {
             response.on('end', () => {
                 // const body = JSON.parse(data);
                 console.log(data);
-                client.say(process.env.BOT_CHANNEL, `CARL says: ${data} (https://games.johanv.xyz/carl)`);
+                client.say(process.env.BOT_CHANNEL, `CARL says: ${data} (https://games.johanv.net/carl)`);
             });
         })
         request.on('error', (error) => {

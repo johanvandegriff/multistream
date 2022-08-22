@@ -1,11 +1,11 @@
 {
-    "name": "chat-man",
+    "name": "multistream",
     "version": "0.0.1",
-    "description": "I'm the chat man. Ski-bi-dibby-dib yo-da-dub-dub, yo-da-dub-dub. https://socket.io/get-started/chat/",
+    "description": "Forward an RTMP livestream to owncast, twitch, youtube, etc. and aggregate all the chats into one chatroom. https://rtmp.johanv.net",
     "license": "AGPL-3.0-or-later",
     "repository": {
         "type": "git",
-        "url": "git://codeberg.org/johanvandegriff/live.johanv.xyz.git"
+        "url": "git://codeberg.org/johanvandegriff/multistream.git"
     },
     "dependencies": {
         "@types/node": "^14.11.8",
