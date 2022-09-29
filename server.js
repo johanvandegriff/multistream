@@ -25,6 +25,13 @@ app.use('/static', express.static('static'));
 //expose the live dir that will be populated by nginx when streaming
 app.use('/live', express.static('live'));
 
+app.get('/start', (req, res) => {
+    console.log("Setting up youtube and owncast connections...")
+    connect_to_youtube_if_not_connected();
+    connect_to_owncast_if_not_connected();
+    res.send('ok')
+});
+
 //use socket.io to make a simple live chatroom
 io.on('connection', (socket) => {
     console.log('a user connected');
@@ -33,12 +40,6 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (msg) => {
-        if (msg.text === "we are live!") {
-            //TODO make a better mechanism for running this
-            console.log("Setting up youtube and owncast connections...")
-            connect_to_youtube_if_not_connected();
-            connect_to_owncast_if_not_connected();
-        }
         // iosend(msg.name, msg.text);
         owncastSend(msg.name, msg.text);
         handleCommand(msg.text);
