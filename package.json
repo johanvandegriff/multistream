@@ -9,15 +9,15 @@
     },
     "dependencies": {
         "@types/node": "^14.11.8",
-        "axios": "^0.26.0",
-        "color-hash": "^1.0.3",
+        "axios": "^0.26.1",
+        "color-hash": "^1.1.1",
         "dlivetv-api": "^1.0.10",
-        "dotenv": "^8.2.0",
-        "express": "^4.15.2",
-        "jquery": "^3.5.1",
-        "socket.io": "^4.4.1",
-        "tmi.js": "^1.5.0",
-        "youtube-live-chat": "^1.0.3"
+        "dotenv": "^8.6.0",
+        "express": "^4.18.1",
+        "jquery": "^3.6.1",
+        "socket.io": "^4.5.2",
+        "tmi.js": "^1.8.5",
+        "youtube-chat": "^2.1.1"
     },
     "devDependencies": {
         "video.js": "^7.8.4"

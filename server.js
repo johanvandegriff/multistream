@@ -7,7 +7,7 @@ const io = require('socket.io')(server);
 const dotenv = require('dotenv'); //for storing secrets in an env file
 const tmi = require('tmi.js'); //twitch chat https://dev.twitch.tv/docs/irc
 const Dlive = require('dlivetv-api'); //dlive chat https://github.com/lkd70/dlivetv-api
-const YouTube = require('youtube-live-chat'); //youtube live chat https://github.com/yuta0801/youtube-live-chat
+const { LiveChat } = require("youtube-chat"); //youtube chat https://github.com/LinaTsukusu/youtube-chat#readme
 const axios = require('axios');
 const WebSocketClient = require('websocket').client;
 
@@ -340,48 +340,90 @@ dotenv.config({ path: '/srv/secret-youtube.env' }) //bot API key and other info
 // console.log("YOUTUBE_CHANNEL_ID " + process.env.YOUTUBE_CHANNEL_ID);
 // console.log("YOUTUBE_API_KEY " + process.env.YOUTUBE_API_KEY);
 
-var yt; // = new YouTube(process.env.YOUTUBE_CHANNEL_ID, process.env.YOUTUBE_API_KEY);
+var yt = new LiveChat({channelId: process.env.YOUTUBE_CHANNEL_ID}) //note: does not need the API key
 
-//the problem is that it fails when there is no livestream, and gives up after 1 attempt
-//i solve this by checking every minute for a livestream until it finds one and successfully connects to the chat
-// setInterval(function(){ connect_to_youtube_if_not_connected() }, 60000);
-//using an interval uses up my api key quota, so instead this function is called when i type "we are live!" in the chat (see handleCommand)
-function connect_to_youtube_if_not_connected() {
-    if (yt != undefined && yt.liveId != undefined && yt.chatId != undefined) {
-        console.log("youtube is already connected");
-        iosend("youtube", "connected");
-        return;
+// Emit at start of observation chat.
+// liveId: string
+yt.on("start", (liveId) => {
+    console.log('YouTube chat connection started!');
+    console.log(liveId);
+    iosend("youtube", "connected");
+})
+  
+// Emit at end of observation chat.
+// reason: string?
+yt.on("end", (reason) => {
+    console.log("YouTube chat connection ended");
+    console.log(reason);
+    iosend("youtube", "disconnected");
+})
+  
+// Emit at receive chat.
+// chat: ChatItem
+yt.on("chat", (chatItem) => {
+    console.log("youtube chat item");
+    // console.log(chatItem);
+    var author = chatItem.author.name;
+    var message = undefined;
+    chatItem.message.forEach(m => {
+        if (m.text !== undefined) {
+            message = m.text;
+            /*
+            { text: 'asdf' }
+            */
+        } else {
+            if (m.emojiText !== undefined) {
+                message = m.emojiText;
+            }
+            /*
+            {
+                url: 'https://yt3.ggpht.com/m6yqTzfmHlsoKKEZRSZCkqf6cGSeHtStY4rIeeXLAk4N9GY_yw3dizdZoxTrjLhlY4r_rkz3GA=w24-h24-c-k-nd',
+                alt: ':yt:',
+                isCustomEmoji: true,
+                emojiText: ':yt:'
+            }
+
+            OR
+
+            {
+                url: 'https://www.youtube.com/s/gaming/emoji/0f0cae22/emoji_u1f600.svg',
+                alt: ':grinning_face:',
+                isCustomEmoji: false,
+                emojiText: '😀'
+            }
+            */
+        }
+    });
+
+    if (message !== undefined) {
+        console.log(author, message);
+        // iosend(author, message)
+        owncastSend(author, message)
     }
-    iosend("youtube", "trying to connect...");
+})
+  
+// Emit when an error occurs
+// err: Error or any
+yt.on("error", (err) => {
+    console.error("YouTube chat connection ERROR");
+    console.log(err);
+    iosend("youtube", "ERROR: " + JSON.stringify(err));
+})
+
+async function connect_to_youtube_if_not_connected() {
     console.log("trying to connect to youtube...");
+    iosend("youtube", "trying to connect...");
 
-    yt = new YouTube(process.env.YOUTUBE_CHANNEL_ID, process.env.YOUTUBE_API_KEY);
+    // Stop fetch loop
+    yt.stop()
 
-    yt.on('ready', () => {
-        iosend("youtube", "connected!");
-        console.log('YouTube is ready!');
-        console.log("yt.liveId: " + yt.liveId);
-        console.log("yt.chatId: " + yt.chatId);
-        yt.listen(1000);
-    })
-
-    yt.on('message', data => {
-        console.log(data.snippet.displayMessage);
-        console.log(JSON.stringify(data));
-        // iosend(data.authorDetails.displayName, data.snippet.displayMessage)
-        owncastSend(data.authorDetails.displayName, data.snippet.displayMessage)
-    })
-
-    yt.on('error', error => {
+    // Start fetch loop
+    const ok = await yt.start()
+    if (!ok) {
+        console.error("YouTube chat connection failed to start");
         iosend("youtube", "error connecting to chat");
-        console.error("YouTube ERROR");
-        console.log(error);
-        console.log("yt.liveId: " + yt.liveId);
-        console.log("yt.chatId: " + yt.chatId);
 
-        yt = null; //disconnect when there is an error
-    })
-
+    }
 }
 
 
