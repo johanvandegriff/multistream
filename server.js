@@ -39,14 +39,15 @@ app.get('/start', (req, res) => {
 
 //use socket.io to make a simple live chatroom
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log('[socket.io] a user connected');
     socket.on('disconnect', () => {
-        console.log('a user disconnected');
+        console.log('[socket.io] a user disconnected');
     });
 
     socket.on('chat message', (msg) => {
+        console.log(`[socket.io] RECV ${msg.name}: ${msg.text}`);
         if (msg.text === "we are live!") {
-            console.log("start stream triggered from magic chat message")
+            console.log("[socket.io] start stream triggered from magic chat message")
             startStream();
         }
         // iosend(msg.name, msg.text);
@@ -56,7 +57,7 @@ io.on('connection', (socket) => {
 });
 
 function iosend(name, text) {
-    console.log('message: ' + name + ": " + text);
+    console.log(`[socket.io] SEND ${name}: ${text}`);
     var iomsg = {'name': name, 'text': text};
     io.emit('chat message', iomsg);
     // emit the message many times for testing CSS
@@ -77,26 +78,26 @@ console.log("OWNCAST_WS", process.env.OWNCAST_WS);
 
 function owncastChatConnect(name, onConnectionEstablished, onMessageReceived, onErrorOrClose) {
     axios.post(process.env.OWNCAST_URL+'/api/chat/register', {"displayName": name}).then((res) => {
-        console.log(`Status: ${res.status}`);
-        console.log('Body:', res.data);
+        console.log(`[owncast] Status: ${res.status}`);
+        console.log(`[owncast] Body: ${res.data}`);
         
         var token = res.data.accessToken;
 
         var client = new WebSocketClient();
 
         client.on('connectFailed', function(error) {
-            console.log('Connect Error: ' + error.toString());
+            console.log('[owncast] Connect Error: ' + error.toString());
             onErrorOrClose();
         });
 
         client.on('connect', function(connection) {
-            console.log('WebSocket Client Connected');
+            console.log('[owncast] WebSocket Client Connected');
             connection.on('error', function(error) {
-                console.log("Connection Error: " + error.toString());
+                console.log("[owncast] Connection Error: " + error.toString());
                 onErrorOrClose();
             });
             connection.on('close', function() {
-                console.log('Connection Closed');
+                console.log('[owncast] Connection Closed');
                 onErrorOrClose();
             });
             connection.on('message', function(message) {
@@ -114,7 +115,7 @@ function owncastChatConnect(name, onConnectionEstablished, onMessageReceived, on
         client.connect(process.env.OWNCAST_WS+'/ws?accessToken='+token);
 
     }).catch((err) => {
-        console.error(err);
+        console.error("[owncast] error", err);
         onErrorOrClose();
     });
 }
@@ -122,7 +123,7 @@ function owncastChatConnect(name, onConnectionEstablished, onMessageReceived, on
 var owncastProtocolChatConnection;
 
 function connect_to_owncast_if_not_connected() {
-    console.log('owncastProtocolChatConnection === undefined:', owncastProtocolChatConnection === undefined);
+    console.log('[owncast] owncastProtocolChatConnection === undefined:', owncastProtocolChatConnection === undefined);
     if (owncastProtocolChatConnection === undefined) {
         //chat connection just for listening
         owncastChatConnect("multistream protocol droid", (connection) => {
@@ -130,7 +131,7 @@ function connect_to_owncast_if_not_connected() {
             owncastProtocolChatConnection = connection;
         }, (message) => {
             //message received
-            // console.log("Received: '" + JSON.stringify(message) + "'");
+            console.log("[owncast] Received: '" + JSON.stringify(message) + "'");
             //user joins:
             //Received: '{"id":"dZl60kLng","timestamp":"2022-02-27T23:37:24.330263605Z","type":"USER_JOINED","user":{"id":"_R_eAkL7g","displayName":"priceless-roentgen2","displayColor":123,"createdAt":"2022-02-27T23:37:24.250217566Z","previousNames":["priceless-roentgen2"]}}'
             //message:
@@ -180,6 +181,7 @@ function sendQueue(connection, queue) {
 }
 
 function owncastSend(name, text) {
+    // return iosend(name, text); //for testing
     if (owncastQueue[name] == null) {
         owncastQueue[name] = [];
     }
@@ -238,14 +240,12 @@ client.connect();
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
-    console.log(`* Connected to ${addr}:${port}`);
+    console.log(`[twitch] connected to ${addr}:${port}`);
 }
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
-    console.log("TARGET " + target);
-    console.log("CONTEXT " + JSON.stringify(context));
-    console.log("MSG " + msg);
-    console.log("SELF " + self);
+    console.log(`[twitch] TARGET: ${target} SELF: ${self} CONTEXT: ${JSON.stringify(context)}`)
+    console.log(`[twitch] ${context.username}: ${msg}`)
 
     // Ignore whispers
     if (context["message-type"] === "whisper") { return; }
@@ -267,9 +267,9 @@ function handleCommand(commandName1) {
     if (commandName === '!dice') {
         const num = rollDice();
         //commands sent here will be echoed to the socket chat since they will be detected by onMessageHandler
-        client.say(process.env.BOT_CHANNEL, `You rolled a ${num}`);
+        client.say(process.env.TWITCH_BOT_CHANNEL, `You rolled a ${num}`);
     } else if (commandName === '!boggle') {
-        client.say(process.env.BOT_CHANNEL, `play boggle at https://games.johanv.net/boggle`);
+        client.say(process.env.TWITCH_BOT_CHANNEL, `play boggle at https://jjv.sh/boggle`);
     } else if (commandName === '!carl' || commandName === '!CARL') {
         const url = 'https://games.johanv.net/carl_api';
         const request = https.request(url, (response) => {
@@ -279,8 +279,8 @@ function handleCommand(commandName1) {
             });
             response.on('end', () => {
                 // const body = JSON.parse(data);
-                console.log(data);
-                client.say(process.env.BOT_CHANNEL, `CARL says: ${data} (https://games.johanv.net/carl)`);
+                console.log("[bot] CARL: ", data);
+                client.say(process.env.TWITCH_BOT_CHANNEL, `CARL says: ${data} (https://jjv.sh/carl)`);
             });
         })
         request.on('error', (error) => {
@@ -289,11 +289,11 @@ function handleCommand(commandName1) {
         request.end();
     } else {
         valid = false;
-        console.log(`* Unknown command ${commandName}`);
+        console.log(`[bot] Unknown command ${commandName}`);
     }
 
     if (valid) {
-        console.log(`* Executed ${commandName} command`);
+        console.log(`[bot] Executed ${commandName} command`);
     }
 }
 
@@ -311,12 +311,12 @@ dotenv.config({ path: '/srv/secret-dlive.env' }) //bot API key and other info
 //DLIVE_BOT_CHANNEL=jjvantheman
 // console.log("DLIVE_BOT_SECRET " + process.env.DLIVE_BOT_SECRET);
 // console.log("DLIVE_BOT_CHANNEL " + process.env.DLIVE_BOT_CHANNEL);
-const bot = new Dlive(process.env.DLIVE_BOT_SECRET, process.env.DLIVE_BOT_CHANNEL);
+const bot = new Dlive(process.env.DLIVE_BOT_CHANNEL, process.env.DLIVE_BOT_SECRET);
 
 // Monitor for 'ChatText' events
 bot.on('ChatText', msg => {
     // Log every message recieved to the console
-    console.log(`[${msg.sender.displayname}]: ${msg.content}`);
+    console.log(`[dlive] ${msg.sender.displayname}: ${msg.content}`);
 
     //copy dlive chat to owncast, which forwards to socket chat
     // iosend(msg.sender.displayname, msg.content);
@@ -345,7 +345,7 @@ var yt = new LiveChat({channelId: process.env.YOUTUBE_CHANNEL_ID}) //note: does 
 // Emit at start of observation chat.
 // liveId: string
 yt.on("start", (liveId) => {
-    console.log('YouTube chat connection started!');
+    console.log("[youtube] chat connection started!");
     console.log(liveId);
     iosend("youtube", "connected");
 })
@@ -353,7 +353,7 @@ yt.on("start", (liveId) => {
 // Emit at end of observation chat.
 // reason: string?
 yt.on("end", (reason) => {
-    console.log("YouTube chat connection ended");
+    console.log("[youtube] chat connection ended");
     console.log(reason);
     iosend("youtube", "disconnected");
 })
@@ -361,7 +361,6 @@ yt.on("end", (reason) => {
 // Emit at receive chat.
 // chat: ChatItem
 yt.on("chat", (chatItem) => {
-    console.log("youtube chat item");
     // console.log(chatItem);
     var author = chatItem.author.name;
     var message = undefined;
@@ -395,23 +394,24 @@ yt.on("chat", (chatItem) => {
         }
     });
 
+    console.log(`[youtube] ${author}: ${message}`);
     if (message !== undefined) {
-        console.log(author, message);
         // iosend(author, message)
-        owncastSend(author, message)
+        owncastSend(author, message);
+        handleCommand(message);
     }
 })
   
 // Emit when an error occurs
 // err: Error or any
 yt.on("error", (err) => {
-    console.error("YouTube chat connection ERROR");
+    console.error("[youtube] chat connection ERROR");
     console.log(err);
-    iosend("youtube", "ERROR: " + JSON.stringify(err));
+    iosend("youtube", `${err}`);
 })
 
 async function connect_to_youtube_if_not_connected() {
-    console.log("trying to connect to youtube...");
+    console.log("[youtube] trying to connect to chat...");
     iosend("youtube", "trying to connect...");
 
     // Stop fetch loop
@@ -420,8 +420,8 @@ async function connect_to_youtube_if_not_connected() {
     // Start fetch loop
     const ok = await yt.start()
     if (!ok) {
-        console.error("YouTube chat connection failed to start");
-        iosend("youtube", "error connecting to chat");
+        console.error("[youtube] falied to connect to chat");
+        iosend("youtube", "falied to connect to chat");
 
     }
 }
