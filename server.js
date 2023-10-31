@@ -232,11 +232,15 @@ const opts = {
 
 // Create a client with our options
 const client = new tmi.client(opts);
-// Register our event handlers (defined below)
-client.on('message', onMessageHandler);
-client.on('connected', onConnectedHandler);
-// Connect to Twitch:
-client.connect();
+
+console.log(`[twitch] TWITCH_ENABLE=${process.env.TWITCH_ENABLE}`)
+if (process.env.TWITCH_ENABLE === 'true') {
+    // Register our event handlers (defined below)
+    client.on('message', onMessageHandler);
+    client.on('connected', onConnectedHandler);
+    // Connect to Twitch:
+    client.connect();
+}
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
