@@ -216,7 +216,7 @@ function owncastSend(name, text) {
 dotenv.config({ path: '/srv/secret-twitch.env' }) //bot API key and other info
 //the /srv/secret-twitch.env file should look like:
 //TWITCH_BOT_USERNAME=jjvantheman (or create a second account for the bot)
-//TWITCH_BOT_OATH_TOKEN=oauth:blah blah blah
+//TWITCH_BOT_OAUTH_TOKEN=oauth:blah blah blah
 //TWITCH_BOT_CHANNEL=jjvantheman
 
 // Define configuration options
