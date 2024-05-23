@@ -1,5 +1,5 @@
-#FROM tiangolo/nginx-rtmp
-FROM johanvandegriff/nginx-rtmp-arm64v8:latest
+FROM tiangolo/nginx-rtmp
+#FROM johanvandegriff/nginx-rtmp-arm64v8:latest
 
 #https://nodejs.org/en/docs/guides/nodejs-docker-webapp/
 # Create app directory
@@ -20,6 +20,31 @@ COPY package*.json ./
 RUN echo 'deb http://deb.debian.org/debian buster main non-free contrib' > /etc/apt/sources.list.d/buster.list \
      && apt-get update -yq \
      && apt-get install -yq libc6
+
+# to get rtmps to work:
+# https://dev.to/lax/rtmps-relay-with-stunnel-12d3
+RUN apt-get install -yq stunnel4
+RUN cat <<EOF > /etc/stunnel/stunnel.conf
+setuid = stunnel4
+setgid = stunnel4
+pid=/tmp/stunnel.pid
+output = /var/log/stunnel4/stunnel.log
+include = /etc/stunnel/conf.d
+debug = 7
+EOF
+RUN echo 'ENABLE=1' >> /etc/default/stunnel4
+# add kick rtmp->rtmps proxy
+RUN mkdir /etc/stunnel/conf.d/
+RUN cat <<EOF > /etc/stunnel/conf.d/kick.conf
+[kick]
+client = yes
+accept = 127.0.0.1:19350
+connect = fa723fc1b171.global-contribute.live-video.net:443
+verifyChain = no
+verifyChain = yes
+CApath = /etc/ssl/certs/
+EOF
+RUN service stunnel4 restart
 
 # https://stackoverflow.com/questions/77021471/deprecation-warning-when-installing-nodejs-on-docker-container-using-nodesource
 RUN set -uex; \

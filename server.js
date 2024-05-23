@@ -215,9 +215,9 @@ function owncastSend(name, text) {
 //twitch chat stuff
 dotenv.config({ path: '/srv/secret-twitch.env' }) //bot API key and other info
 //the /srv/secret-twitch.env file should look like:
-//TWITCH_BOT_USERNAME=jjvantheman (or create a second account for the bot)
+//TWITCH_BOT_USERNAME=jjvanvan (or create a second account for the bot)
 //TWITCH_BOT_OAUTH_TOKEN=oauth:blah blah blah
-//TWITCH_BOT_CHANNEL=jjvantheman
+//TWITCH_BOT_CHANNEL=jjvanvan
 
 // Define configuration options
 const opts = {
@@ -312,7 +312,7 @@ function rollDice () {
 dotenv.config({ path: '/srv/secret-dlive.env' }) //bot API key and other info
 //the /srv/secret-dlive.env file should look like:
 //DLIVE_BOT_SECRET=blah blah blah
-//DLIVE_BOT_CHANNEL=jjvantheman
+//DLIVE_BOT_CHANNEL=jjvanvan
 // console.log("DLIVE_BOT_SECRET " + process.env.DLIVE_BOT_SECRET);
 // console.log("DLIVE_BOT_CHANNEL " + process.env.DLIVE_BOT_CHANNEL);
 const bot = new Dlive(process.env.DLIVE_BOT_CHANNEL, process.env.DLIVE_BOT_SECRET);
