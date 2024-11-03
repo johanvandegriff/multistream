@@ -1,7 +1,7 @@
 {
     "name": "multistream",
     "version": "0.0.1",
-    "description": "Forward an RTMP livestream to owncast, twitch, youtube, etc. and aggregate all the chats into one chatroom. https://rtmp.johanv.net",
+    "description": "Forward an RTMP livestream to owncast, twitch, youtube, etc. and aggregate all the chats into one chatroom. https://rtmp.jjv.sh",
     "license": "AGPL-3.0-or-later",
     "repository": {
         "type": "git",

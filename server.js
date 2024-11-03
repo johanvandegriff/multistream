@@ -275,7 +275,7 @@ function handleCommand(commandName1) {
     } else if (commandName === '!boggle') {
         client.say(process.env.TWITCH_BOT_CHANNEL, `play boggle at https://jjv.sh/boggle`);
     } else if (commandName === '!carl' || commandName === '!CARL') {
-        const url = 'https://games.johanv.net/carl_api';
+        const url = 'https://games.jjv.sh/carl_api';
         const request = https.request(url, (response) => {
             let data = '';
             response.on('data', (chunk) => {
